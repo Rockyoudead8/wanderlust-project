@@ -1,0 +1,132 @@
+<% layout("/layouts/boilerplate")%>
+
+    <body>
+        <div class="row">
+            <div class="col-8">
+                <h3>Listing Details</h3>
+            </div>
+            <div class="card">
+                <img src="<%=data.image.url%>" class="card-img-top show-img" alt="listing-image">
+                <div class="card-body">
+                    <b>
+                        <ul>
+                            <li>owned by : <%=data.owner.username%>
+                            </li>
+                            <li>
+                                <h1>
+                                    <%=data.title%>
+                            </li>
+                            </h1>
+                            <li>
+                                <h4>description : <%=data.description%>
+                                </h4>
+                            </li>
+
+                            <li>
+                                <h4>price: &#8377; <%=data.price.toLocaleString('en-IN')%></h4>
+                            </li>
+                            <li>
+                                <h4>location : <%=data.location%>
+                                </h4>
+                            </li>
+                            <li>
+                                <h4>country : <%=data.country%>
+                                </h4>
+                            </li>
+                        </ul>
+                    </b>
+                </div>
+            </div>
+            <%if( currUser && currUser._id.equals(data.owner._id)){%>
+                <div class="row btns">
+                    <div class="col-2">
+                        <a href="/listings/<%=data._id%>/update" class="btn btn-dark">click to update</a>
+                    </div>
+
+                    <div class="col-3">
+                        <form method="post" action="/listing/<%=data.id%>/delete?_method=DELETE">
+                            <button class="btn btn-dark">click to delete this listing</button>
+                        </form>
+                    </div>
+
+                </div>
+                <%}%>
+        </div>
+
+        <!-- review part -->
+
+        <hr>
+        <%if(currUser){%>
+            <form action="/listings/<%=data._id%>/reviews" method="post">
+                <h2>Leave A Review</h2>
+                <br>
+                <label for="rating">Rating</label>
+                <fieldset class="starability-slot">
+
+                    <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked
+                        aria-label="No rating." />
+                    <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+                    <label for="first-rate1" title="Terrible">1 star</label>
+                    <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+                    <label for="first-rate2" title="Not good">2 stars</label>
+                    <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+                    <label for="first-rate3" title="Average">3 stars</label>
+                    <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+                    <label for="first-rate4" title="Very good">4 stars</label>
+                    <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+                    <label for="first-rate5" title="Amazing">5 stars</label>
+                </fieldset>
+                <br>
+                <div>
+                    <label class="form-floating" for="comment">Leave A Comment</label>
+                    <textarea class="form-control" name="review[comment]" id="comment"></textarea>
+                </div>
+                <br>
+                <button type="submit" class="btn btn-dark">Submit</button>
+            </form>
+            <% }%>
+
+
+                <%if(data.reviews.length){%>
+                    <h1>All Reviews</h1>
+                    <ul>
+                        <div class="card-body border border-success p-2 mb-2 bg-success bg-opacity-10">
+                            <%for(let review of data.reviews){%>
+                                <li>
+                                    <h2>By :&commat;<%=review.author.username%>
+                                    </h2>
+                                    <%=review.comment%> <br>
+                                        <p class="starability-result card-text" data-rating="<%=review.rating%>">
+                                        </p>
+                                        <%if( currUser && currUser._id.equals(review.author._id)){%>
+                                            <form
+                                                action="/listings/<%=data._id%>/reviews/<%=review._id%>?_method=DELETE"
+                                                method="post">
+                                                <button type="submit" class="btn btn-dark">Delete The Review</button>
+                                            </form>
+                                            <%}%>
+                                </li>
+                                <%}%>
+                        </div>
+                    </ul>
+
+                    <%}%>
+                        <h2>You Will Be here</h2>
+                        <div id="map">
+
+                        </div>
+                        <script>
+                            const token = "<%=process.env.MAP_TOKEN%>"
+                            mapboxgl.accessToken = token;
+                            const coordinates= <%- JSON.stringify(data.geometry.coordinates) %>;
+                            const map = new mapboxgl.Map({
+                                container: 'map', // container ID
+                                center: coordinates, // starting position [lng, lat]. Note that lat must be set between -90 and 90
+                                zoom: 9 // starting zoom
+                            });
+    
+                            const marker1 = new mapboxgl.Marker()
+                                .setLngLat(coordinates)
+                                .addTo(map);
+                        </script>
+    </body>
